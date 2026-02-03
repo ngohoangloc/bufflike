@@ -32,10 +32,14 @@
 	$: categoryServices = services.filter((s) => s.category === selectedCategory);
 	$: selectedService = services.find((s) => s.service == selectedServiceId);
 
-	// Auto select first service in category
-	$: if (selectedCategory && (!selectedService || selectedService.category !== selectedCategory)) {
-		const first = categoryServices[0];
-		if (first) selectedServiceId = first.service;
+	// Auto select first service in category when category changes or services load
+	$: {
+		const categoryHasServices = categoryServices.length > 0;
+		const currentServiceInList = categoryServices.find((s) => s.service == selectedServiceId);
+
+		if (selectedCategory && categoryHasServices && !currentServiceInList) {
+			selectedServiceId = categoryServices[0].service;
+		}
 	}
 
 	$: totalCharge = selectedService ? ((selectedService.rate * quantity) / 1000).toFixed(4) : 0;
