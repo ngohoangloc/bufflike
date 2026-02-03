@@ -38,13 +38,13 @@
 					</div>
 
 					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" class="relative h-8 w-8 rounded-full">
-								<Avatar.Root class="h-8 w-8">
-									<Avatar.Image src="" alt={user.email} />
-									<Avatar.Fallback>{user.email?.substring(0, 2).toUpperCase()}</Avatar.Fallback>
-								</Avatar.Root>
-							</Button>
+						<DropdownMenu.Trigger
+							class="focus-visible:ring-ring hover:bg-accent hover:text-accent-foreground relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+						>
+							<Avatar.Root class="h-8 w-8">
+								<Avatar.Image src="" alt={user.email} />
+								<Avatar.Fallback>{user.email?.substring(0, 2).toUpperCase()}</Avatar.Fallback>
+							</Avatar.Root>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56" align="end">
 							<DropdownMenu.Label class="font-normal">
