@@ -55,5 +55,9 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.0.18",
 		"wrangler": "^4.61.1"
+	},
+	"dependencies": {
+		"@supabase/ssr": "^0.8.0",
+		"@supabase/supabase-js": "^2.93.3"
 	}
 }
