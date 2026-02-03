@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import * as Card from '$lib/components/ui/card';
+	import * as Select from '$lib/components/ui/select';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Button } from '$lib/components/ui/button';
+	import * as Alert from '$lib/components/ui/alert';
 
 	let services: any[] = [];
 	let loading = true;
@@ -13,6 +19,10 @@
 	let selectedServiceId = '';
 	let link = '';
 	let quantity = 0;
+
+	// UI Objects for Select Binding
+	let selectedCategoryOption: { value: string; label: string } | undefined;
+	let selectedServiceOption: { value: string; label: string } | undefined;
 
 	onMount(async () => {
 		try {
@@ -32,7 +42,7 @@
 	$: categoryServices = services.filter((s) => s.category === selectedCategory);
 	$: selectedService = services.find((s) => s.service == selectedServiceId);
 
-	// Auto select first service in category when category changes or services load
+	// Auto select first service logic
 	$: {
 		const categoryHasServices = categoryServices.length > 0;
 		const currentServiceInList = categoryServices.find((s) => s.service == selectedServiceId);
@@ -42,7 +52,36 @@
 		}
 	}
 
+	// Sync UI from Logic (One-way sync to avoid cycles if possible, or careful two-way)
+	$: if (selectedCategory && selectedCategoryOption?.value !== selectedCategory) {
+		selectedCategoryOption = { value: selectedCategory, label: selectedCategory };
+	}
+
+	$: if (selectedServiceId && selectedServiceOption?.value !== String(selectedServiceId)) {
+		const s = services.find((x) => x.service == selectedServiceId);
+		if (s) {
+			selectedServiceOption = {
+				value: String(s.service),
+				label: `${s.service} - ${s.name} - $${s.rate}/1k`
+			};
+		} else {
+			selectedServiceOption = undefined;
+		}
+	}
+
 	$: totalCharge = selectedService ? ((selectedService.rate * quantity) / 1000).toFixed(4) : 0;
+
+	function onCategoryChange(v: any) {
+		if (!v) return;
+		selectedCategoryOption = v; // Update UI
+		selectedCategory = v.value; // Update Logic
+	}
+
+	function onServiceChange(v: any) {
+		if (!v) return;
+		selectedServiceOption = v; // Update UI
+		selectedServiceId = v.value; // Update Logic
+	}
 
 	const handleSubmit = async () => {
 		if (
@@ -77,7 +116,6 @@
 				message = `Order placed successfully! ID: ${data.order}`;
 				link = '';
 				quantity = 0;
-				// Optional: redirect to history
 				setTimeout(() => goto('/dashboard/history'), 1500);
 			} else {
 				errorMsg = data.error || 'Failed to place order';
@@ -91,92 +129,97 @@
 </script>
 
 <div class="mx-auto max-w-2xl space-y-6">
-	<h1 class="text-2xl font-bold text-gray-900">New Order</h1>
+	<h1 class="text-3xl font-bold tracking-tight">New Order</h1>
 
 	{#if loading}
-		<div class="text-gray-500">Loading services...</div>
+		<div class="space-y-4">
+			<div class="h-10 w-full animate-pulse rounded bg-gray-200"></div>
+			<div class="h-10 w-full animate-pulse rounded bg-gray-200"></div>
+		</div>
 	{:else}
-		<form on:submit|preventDefault={handleSubmit} class="space-y-6 rounded-lg bg-white p-6 shadow">
-			{#if errorMsg}
-				<div class="rounded bg-red-100 p-3 text-red-700">{errorMsg}</div>
-			{/if}
-			{#if message}
-				<div class="rounded bg-green-100 p-3 text-green-700">{message}</div>
-			{/if}
-
-			<!-- Category -->
-			<div>
-				<label class="block text-sm font-medium text-gray-700">Category</label>
-				<select
-					bind:value={selectedCategory}
-					class="mt-1 w-full rounded border shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-				>
-					{#each categories as cat}
-						<option value={cat}>{cat}</option>
-					{/each}
-				</select>
-			</div>
-
-			<!-- Service -->
-			<div>
-				<label class="block text-sm font-medium text-gray-700">Service</label>
-				<select
-					bind:value={selectedServiceId}
-					class="mt-1 w-full rounded border shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-				>
-					{#each categoryServices as service}
-						<option value={service.service}>
-							{service.service} - {service.name} - ${service.rate}/1k
-						</option>
-					{/each}
-				</select>
-				{#if selectedService}
-					<p class="mt-1 text-sm text-gray-500">
-						Min: {selectedService.min} | Max: {selectedService.max}
-					</p>
+		<Card.Root>
+			<Card.Content class="space-y-6 pt-6">
+				{#if errorMsg}
+					<Alert.Root variant="destructive">
+						<Alert.Title>Error</Alert.Title>
+						<Alert.Description>{errorMsg}</Alert.Description>
+					</Alert.Root>
 				{/if}
-			</div>
+				{#if message}
+					<Alert.Root variant="default" class="border-green-200 bg-green-50 text-green-700">
+						<Alert.Title>Success</Alert.Title>
+						<Alert.Description>{message}</Alert.Description>
+					</Alert.Root>
+				{/if}
 
-			<!-- Link -->
-			<div>
-				<label class="block text-sm font-medium text-gray-700">Link</label>
-				<input
-					type="url"
-					required
-					bind:value={link}
-					class="mt-1 w-full rounded border shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-					placeholder="https://..."
-				/>
-			</div>
+				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+					<!-- Category -->
+					<div class="space-y-2">
+						<Label>Category</Label>
+						<Select.Root selected={selectedCategoryOption} onSelectedChange={onCategoryChange}>
+							<Select.Trigger><Select.Value placeholder="Select Category" /></Select.Trigger>
+							<Select.Content class="max-h-[300px]">
+								{#each categories as cat}
+									<Select.Item value={cat} label={cat}>{cat}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
 
-			<!-- Quantity -->
-			<div>
-				<label class="block text-sm font-medium text-gray-700">Quantity</label>
-				<input
-					type="number"
-					required
-					bind:value={quantity}
-					min={selectedService?.min}
-					max={selectedService?.max}
-					class="mt-1 w-full rounded border shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-				/>
-			</div>
+					<!-- Service -->
+					<div class="space-y-2">
+						<Label>Service</Label>
+						<Select.Root selected={selectedServiceOption} onSelectedChange={onServiceChange}>
+							<Select.Trigger><Select.Value placeholder="Select Service" /></Select.Trigger>
+							<Select.Content class="max-h-[300px]">
+								{#each categoryServices as service}
+									<Select.Item
+										value={String(service.service)}
+										label={`${service.service} - ${service.name} - $${service.rate}/1k`}
+									>
+										<span class="font-medium">{service.service}</span> - {service.name} -
+										<span class="text-muted-foreground">${service.rate}/1k</span>
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						{#if selectedService}
+							<p class="text-muted-foreground text-sm">
+								Min: {selectedService.min} | Max: {selectedService.max}
+							</p>
+						{/if}
+					</div>
 
-			<!-- Total Charge -->
-			<div class="rounded bg-gray-50 p-4">
-				<div class="flex justify-between text-lg font-medium">
-					<span>Total Charge:</span>
-					<span class="text-indigo-600">${totalCharge}</span>
-				</div>
-			</div>
+					<!-- Link -->
+					<div class="space-y-2">
+						<Label for="link">Link</Label>
+						<Input id="link" type="url" required bind:value={link} placeholder="https://..." />
+					</div>
 
-			<button
-				type="submit"
-				disabled={submitting}
-				class="w-full rounded bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:opacity-50"
-			>
-				{submitting ? 'Placing Order...' : 'Submit Order'}
-			</button>
-		</form>
+					<!-- Quantity -->
+					<div class="space-y-2">
+						<Label for="quantity">Quantity</Label>
+						<Input
+							id="quantity"
+							type="number"
+							required
+							bind:value={quantity}
+							min={selectedService?.min}
+							max={selectedService?.max}
+						/>
+					</div>
+
+					<!-- Total -->
+					<div class="bg-secondary flex items-center justify-between rounded-lg bg-gray-50 p-4">
+						<span class="font-medium">Total Charge:</span>
+						<span class="text-primary text-xl font-bold">${totalCharge}</span>
+					</div>
+
+					<Button type="submit" class="w-full" disabled={submitting}>
+						{submitting ? 'Placing Order...' : 'Submit Order'}
+					</Button>
+				</form>
+			</Card.Content>
+		</Card.Root>
 	{/if}
 </div>

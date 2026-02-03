@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import * as Table from '$lib/components/ui/table';
+	import * as Select from '$lib/components/ui/select';
+	import { Input } from '$lib/components/ui/input';
 
 	let services: any[] = [];
 	let loading = true;
 	let searchTerm = '';
 	let categoryFilter = 'All';
+
+	// UI Object for Select
+	let categoryFilterOption = { value: 'All', label: 'All' };
 
 	onMount(async () => {
 		try {
@@ -26,74 +32,62 @@
 		const matchesCategory = categoryFilter === 'All' || service.category === categoryFilter;
 		return matchesSearch && matchesCategory;
 	});
+
+	function onCategoryChange(v: any) {
+		if (!v) return;
+		categoryFilterOption = v;
+		categoryFilter = v.value;
+	}
 </script>
 
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-gray-900">Services</h1>
-		<div class="flex space-x-2">
-			<input
-				type="text"
-				placeholder="Search services..."
-				bind:value={searchTerm}
-				class="rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-			/>
-			<select
-				bind:value={categoryFilter}
-				class="max-w-xs rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-			>
-				{#each categories as cat}
-					<option value={cat}>{cat}</option>
-				{/each}
-			</select>
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="text-3xl font-bold tracking-tight">Services</h1>
+		<div class="flex flex-col gap-2 sm:flex-row">
+			<div class="w-full sm:w-64">
+				<Input type="text" placeholder="Search services..." bind:value={searchTerm} />
+			</div>
+			<div class="w-full sm:w-48">
+				<Select.Root selected={categoryFilterOption} onSelectedChange={onCategoryChange}>
+					<Select.Trigger><Select.Value placeholder="Category" /></Select.Trigger>
+					<Select.Content class="max-h-[300px]">
+						{#each categories as cat}
+							<Select.Item value={cat} label={cat}>{cat}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
 		</div>
 	</div>
 
 	{#if loading}
-		<div class="py-10 text-center text-gray-500">Loading services...</div>
+		<div class="text-muted-foreground py-10 text-center">Loading services...</div>
 	{:else}
-		<div class="overflow-x-auto rounded-lg bg-white shadow">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
-					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
-							>ID</th
-						>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
-							>Service</th
-						>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
-							>Category</th
-						>
-						<th
-							class="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase"
-							>Rate (per 1k)</th
-						>
-						<th
-							class="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase"
-							>Min / Max</th
-						>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-gray-200 bg-white">
+		<div class="rounded-md border bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row>
+						<Table.Head>ID</Table.Head>
+						<Table.Head>Service</Table.Head>
+						<Table.Head>Category</Table.Head>
+						<Table.Head class="text-right">Rate (per 1k)</Table.Head>
+						<Table.Head class="text-right">Min / Max</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each filteredServices as service}
-						<tr class="hover:bg-gray-50">
-							<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">{service.service}</td>
-							<td class="px-6 py-4 text-sm font-medium text-gray-900">{service.name}</td>
-							<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">{service.category}</td>
-							<td class="px-6 py-4 text-right text-sm whitespace-nowrap text-gray-900"
-								>${service.rate}</td
+						<Table.Row>
+							<Table.Cell>{service.service}</Table.Cell>
+							<Table.Cell class="font-medium">{service.name}</Table.Cell>
+							<Table.Cell>{service.category}</Table.Cell>
+							<Table.Cell class="text-right">${service.rate}</Table.Cell>
+							<Table.Cell class="text-muted-foreground text-right"
+								>{service.min} / {service.max}</Table.Cell
 							>
-							<td class="px-6 py-4 text-right text-sm whitespace-nowrap text-gray-500"
-								>{service.min} / {service.max}</td
-							>
-						</tr>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 	{/if}
 </div>

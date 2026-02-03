@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Card from '$lib/components/ui/card';
+	import * as Alert from '$lib/components/ui/alert';
 
 	export let data;
 	let { supabase } = data;
@@ -38,62 +43,49 @@
 	};
 </script>
 
-<div class="flex min-h-[80vh] items-center justify-center">
-	<div class="w-full max-w-md space-y-6 rounded bg-white p-8 shadow-md">
-		<h2 class="text-center text-2xl font-bold text-gray-900">Create a new account</h2>
-		{#if errorMsg}
-			<div class="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-500">{errorMsg}</div>
-		{/if}
-		{#if msg}
-			<div class="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-500">
-				{msg}
+<div class="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+	<Card.Root class="w-full max-w-md">
+		<Card.Header>
+			<Card.Title class="text-center text-2xl font-bold">Create Account</Card.Title>
+			<Card.Description class="text-center">
+				Enter your details below to create your account
+			</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			{#if errorMsg}
+				<Alert.Root variant="destructive" class="mb-4">
+					<Alert.Title>Error</Alert.Title>
+					<Alert.Description>{errorMsg}</Alert.Description>
+				</Alert.Root>
+			{/if}
+			{#if msg}
+				<Alert.Root variant="default" class="mb-4 border-green-200 bg-green-50 text-green-700">
+					<Alert.Title>Success</Alert.Title>
+					<Alert.Description>{msg}</Alert.Description>
+				</Alert.Root>
+			{/if}
+			<form on:submit|preventDefault={handleRegister} class="space-y-4">
+				<div class="space-y-2">
+					<Label for="email">Email</Label>
+					<Input id="email" type="email" placeholder="m@example.com" required bind:value={email} />
+				</div>
+				<div class="space-y-2">
+					<Label for="password">Password</Label>
+					<Input id="password" type="password" required bind:value={password} />
+				</div>
+				<div class="space-y-2">
+					<Label for="confirm-password">Confirm Password</Label>
+					<Input id="confirm-password" type="password" required bind:value={confirmPassword} />
+				</div>
+				<Button type="submit" class="w-full" disabled={loading}>
+					{loading ? 'Creating account...' : 'Sign up'}
+				</Button>
+			</form>
+		</Card.Content>
+		<Card.Footer class="flex justify-center">
+			<div class="text-sm text-gray-500">
+				Already have an account? <a href="/login" class="text-primary hover:underline">Sign in</a>
 			</div>
-		{/if}
-		<form class="space-y-4" on:submit|preventDefault={handleRegister}>
-			<div>
-				<label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
-				<input
-					id="email"
-					type="email"
-					required
-					bind:value={email}
-					class="mt-1 w-full rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-				/>
-			</div>
-			<div>
-				<label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-				<input
-					id="password"
-					type="password"
-					required
-					bind:value={password}
-					class="mt-1 w-full rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-				/>
-			</div>
-			<div>
-				<label for="confirm-password" class="block text-sm font-medium text-gray-700"
-					>Confirm Password</label
-				>
-				<input
-					id="confirm-password"
-					type="password"
-					required
-					bind:value={confirmPassword}
-					class="mt-1 w-full rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-				/>
-			</div>
-			<button
-				type="submit"
-				disabled={loading}
-				class="w-full rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
-			>
-				{loading ? 'Creating account...' : 'Sign up'}
-			</button>
-		</form>
-		<div class="text-center text-sm">
-			<a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500"
-				>Already have an account? Sign in</a
-			>
-		</div>
-	</div>
+		</Card.Footer>
+	</Card.Root>
 </div>

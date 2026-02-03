@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Card from '$lib/components/ui/card';
+	import * as Alert from '$lib/components/ui/alert';
 
 	export let data;
 	let { supabase } = data;
@@ -25,45 +30,39 @@
 	};
 </script>
 
-<div class="flex min-h-[80vh] items-center justify-center">
-	<div class="w-full max-w-md space-y-6 rounded bg-white p-8 shadow-md">
-		<h2 class="text-center text-2xl font-bold text-gray-900">Sign in to your account</h2>
-		{#if errorMsg}
-			<div class="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-500">{errorMsg}</div>
-		{/if}
-		<form class="space-y-4" on:submit|preventDefault={handleLogin}>
-			<div>
-				<label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
-				<input
-					id="email"
-					type="email"
-					required
-					bind:value={email}
-					class="mt-1 w-full rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-				/>
+<div class="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+	<Card.Root class="w-full max-w-md">
+		<Card.Header>
+			<Card.Title class="text-center text-2xl font-bold">Login</Card.Title>
+			<Card.Description class="text-center">
+				Enter your email below to login to your account
+			</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			{#if errorMsg}
+				<Alert.Root variant="destructive" class="mb-4">
+					<Alert.Title>Error</Alert.Title>
+					<Alert.Description>{errorMsg}</Alert.Description>
+				</Alert.Root>
+			{/if}
+			<form on:submit|preventDefault={handleLogin} class="space-y-4">
+				<div class="space-y-2">
+					<Label for="email">Email</Label>
+					<Input id="email" type="email" placeholder="m@example.com" required bind:value={email} />
+				</div>
+				<div class="space-y-2">
+					<Label for="password">Password</Label>
+					<Input id="password" type="password" required bind:value={password} />
+				</div>
+				<Button type="submit" class="w-full" disabled={loading}>
+					{loading ? 'Signing in...' : 'Sign in'}
+				</Button>
+			</form>
+		</Card.Content>
+		<Card.Footer class="flex justify-center">
+			<div class="text-sm text-gray-500">
+				Don't have an account? <a href="/register" class="text-primary hover:underline">Sign up</a>
 			</div>
-			<div>
-				<label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-				<input
-					id="password"
-					type="password"
-					required
-					bind:value={password}
-					class="mt-1 w-full rounded-md border px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-				/>
-			</div>
-			<button
-				type="submit"
-				disabled={loading}
-				class="w-full rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
-			>
-				{loading ? 'Signing in...' : 'Sign in'}
-			</button>
-		</form>
-		<div class="text-center text-sm">
-			<a href="/register" class="font-medium text-indigo-600 hover:text-indigo-500"
-				>Don't have an account? Sign up</a
-			>
-		</div>
-	</div>
+		</Card.Footer>
+	</Card.Root>
 </div>
