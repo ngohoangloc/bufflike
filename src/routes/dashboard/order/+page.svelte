@@ -157,7 +157,9 @@
 					<div class="space-y-2">
 						<Label>Category</Label>
 						<Select.Root selected={selectedCategoryOption} onSelectedChange={onCategoryChange}>
-							<Select.Trigger><Select.Value placeholder="Select Category" /></Select.Trigger>
+							<Select.Trigger class="w-full">
+								{selectedCategoryOption?.label ?? 'Select Category'}
+							</Select.Trigger>
 							<Select.Content class="max-h-[300px]">
 								{#each categories as cat}
 									<Select.Item value={cat} label={cat}>{cat}</Select.Item>
@@ -170,7 +172,19 @@
 					<div class="space-y-2">
 						<Label>Service</Label>
 						<Select.Root selected={selectedServiceOption} onSelectedChange={onServiceChange}>
-							<Select.Trigger><Select.Value placeholder="Select Service" /></Select.Trigger>
+							<Select.Trigger class="h-auto w-full py-2">
+								<div class="flex flex-col items-start text-left">
+									{#if selectedServiceOption}
+										<span class="font-medium"
+											>{selectedServiceOption.label.split(' - ')[1] ||
+												selectedServiceOption.label}</span
+										>
+										<span class="text-muted-foreground text-xs">{selectedServiceOption.label}</span>
+									{:else}
+										"Select Service"
+									{/if}
+								</div>
+							</Select.Trigger>
 							<Select.Content class="max-h-[300px]">
 								{#each categoryServices as service}
 									<Select.Item

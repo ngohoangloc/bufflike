@@ -49,7 +49,9 @@
 			</div>
 			<div class="w-full sm:w-48">
 				<Select.Root selected={categoryFilterOption} onSelectedChange={onCategoryChange}>
-					<Select.Trigger><Select.Value placeholder="Category" /></Select.Trigger>
+					<Select.Trigger class="w-full">
+						{categoryFilterOption?.label ?? 'Category'}
+					</Select.Trigger>
 					<Select.Content class="max-h-[300px]">
 						{#each categories as cat}
 							<Select.Item value={cat} label={cat}>{cat}</Select.Item>
